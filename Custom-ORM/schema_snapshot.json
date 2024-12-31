@@ -4,6 +4,7 @@
       "Columns": [
         "Id INT",
         "Name VARCHAR(MAX)",
+        "phone INT",
         "DateOfBirth DATETIME",
         "product VARCHAR(255)"
       ],

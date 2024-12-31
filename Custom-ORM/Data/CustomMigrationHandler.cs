@@ -297,12 +297,48 @@ namespace Custom_ORM.Data
 
                 foreach (var column in addedColumns)
                 {
-                    script += $"ALTER TABLE {tableName} ADD {column};\n";
+
+                    // Example column string: "ColumnName DataType"
+                    string[] parts = column.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                    if (parts.Length < 2)
+                    {
+                        // Handle invalid column definitions
+                        throw new ArgumentException($"Invalid column definition: {column}");
+                    }
+
+                    string columnName = parts[0]; // The first part is the column name
+                    string dataType = parts[1];  // The second part is the data type
+
+                    // If there's additional metadata (like NOT NULL), include it
+                    string additionalAttributes = string.Join(" ", parts.Skip(2));
+                    Console.WriteLine(columnName);
+                    string[] validTypes = { "INT", "VARCHAR(MAX)", "DATETIME", "VARCHAR(255)" }; // Add all valid types
+                    if (!validTypes.Contains(dataType.ToUpper()))
+                    {
+                        throw new ArgumentException($"Unsupported column type: {dataType}");
+                    }
+                    // Construct the ALTER TABLE statement
+                    script += $"ALTER TABLE {tableName} ADD {columnName} {dataType} {additionalAttributes};\n";
                 }
 
                 foreach (var column in removedColumns)
                 {
-                    script += $"ALTER TABLE {tableName} DROP COLUMN {column};\n";
+
+                    // Example column string: "ColumnName DataType"
+                    string[] parts = column.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                    if (parts.Length < 2)
+                    {
+                        // Handle invalid column definitions
+                        throw new ArgumentException($"Invalid column definition: {column}");
+                    }
+
+                    string columnName = parts[0]; // The first part is the column name
+                    string dataType = parts[1];  // The second part is the data type
+
+
+                    script += $"ALTER TABLE {tableName} DROP COLUMN {columnName};\n";
                 }
             }
 
