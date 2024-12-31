@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 using Microsoft.Data.SqlClient;
 
 namespace Custom_ORM.Data
@@ -6,7 +7,7 @@ namespace Custom_ORM.Data
     public class CustomDbContext
     {
         private readonly string _connectionString;
-        private readonly Dictionary<string, object> _dbSets = new Dictionary<string, object>();
+        public readonly Dictionary<string, object> _dbSets = new Dictionary<string, object>();
 
         public CustomDbContext(string connectionString)
         {
@@ -39,33 +40,174 @@ namespace Custom_ORM.Data
             }
         }
 
+        //    protected void CreateTableIfNotExists(Type entityType, string tableName)
+        //    {
+        //        var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        //        var columns = properties.Select(p =>
+        //        {
+        //            var columnName = $"[{p.Name}]";
+        //            var columnType = GetSqlColumnType(p,p.PropertyType);
+        //            var isPrimaryKey = p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) ? "PRIMARY KEY" : string.Empty;
+        //            return $"{columnName} {columnType} {isPrimaryKey}".Trim();
+        //        });
+
+        //        if (!columns.Any())
+        //        {
+        //            throw new InvalidOperationException($"No columns defined for table {tableName}.");
+        //        }
+
+        //        var createTableSql = $@"
+        //    IF NOT EXISTS (
+        //        SELECT 1
+        //        FROM INFORMATION_SCHEMA.TABLES
+        //        WHERE TABLE_NAME = '{tableName}'
+        //    )
+        //    CREATE TABLE {tableName} ({string.Join(", ", columns)});
+        //";
+        //        Console.WriteLine(createTableSql);
+        //        ExecuteSql(createTableSql);
+        //    }
+
+        //    protected void CreateTableIfNotExists(Type entityType, string tableName)
+        //    {
+        //        var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        //        var columns = new List<string>();
+        //        var foreignKeyConstraints = new List<string>();
+
+        //        foreach (var property in properties)
+        //        {
+        //            var columnName = $"[{property.Name}]";
+        //            var columnType = GetSqlColumnType(property, property.PropertyType);
+        //            var isPrimaryKey = property.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) ? "PRIMARY KEY" : string.Empty;
+
+        //            // Handle ForeignKeyAttribute
+        //            var foreignKeyAttribute = property.GetCustomAttribute<ForeignKeyAttribute>();
+        //            if (foreignKeyAttribute != null)
+        //            {
+        //                var referencedTable = foreignKeyAttribute.Name; // Should hold the table name
+        //                var referencedColumn = "Id"; // Default primary key column
+        //                foreignKeyConstraints.Add($"FOREIGN KEY ({property.Name}) REFERENCES {referencedTable}({referencedColumn})");
+        //            }
+
+
+        //            // Handle navigation properties
+        //            if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+        //            {
+        //                var navigationEntityType = property.PropertyType;
+        //                var navigationTableName = navigationEntityType.Name; // Assuming pluralized table names
+        //                var foreignKeyName = property.Name + "Id";
+        //                //columns.Add($"[{foreignKeyName}] INT");
+        //                foreignKeyConstraints.Add($"FOREIGN KEY ({foreignKeyName}) REFERENCES (Id)");
+        //            }
+        //            else (!string.IsNullOrEmpty(columnType))
+        //            {
+        //                columns.Add($"{columnName} {columnType} {isPrimaryKey}".Trim());
+        //            }
+        //        }
+
+        //        if (!columns.Any())
+        //        {
+        //            throw new InvalidOperationException($"No columns defined for table {tableName}.");
+        //        }
+
+        //        // Create table SQL
+        //        var createTableSql = $@"
+        //    IF NOT EXISTS (
+        //        SELECT 1
+        //        FROM INFORMATION_SCHEMA.TABLES
+        //        WHERE TABLE_NAME = '{tableName}'
+        //    )
+        //    CREATE TABLE {tableName} ({string.Join(", ", columns)});
+        //";
+
+        //        //Console.WriteLine(createTableSql);
+        //        ExecuteSql(createTableSql);
+
+        //        // Add foreign key constraints
+        //        foreach (var fkConstraint in foreignKeyConstraints)
+        //        {
+        //            var alterTableSql = $@"ALTER TABLE {tableName} ADD {fkConstraint};";
+        //            Console.WriteLine(alterTableSql);
+        //            ExecuteSql(alterTableSql);
+        //        }
+        //    }
+
+
+
+
+
         protected void CreateTableIfNotExists(Type entityType, string tableName)
         {
             var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var columns = properties.Select(p =>
+            var columns = new List<string>();
+            var foreignKeyConstraints = new List<string>();
+
+            foreach (var property in properties)
             {
-                var columnName = $"[{p.Name}]";
-                var columnType = GetSqlColumnType(p,p.PropertyType);
-                var isPrimaryKey = p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) ? "PRIMARY KEY" : string.Empty;
-                return $"{columnName} {columnType} {isPrimaryKey}".Trim();
-            });
+                var columnName = $"[{property.Name}]";
+                var columnType = GetSqlColumnType(property, property.PropertyType);
+                var isPrimaryKey = property.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) ? "PRIMARY KEY" : string.Empty;
+
+                // Handle ForeignKeyAttribute
+                var foreignKeyAttribute = property.GetCustomAttribute<ForeignKeyAttribute>();
+                if (foreignKeyAttribute != null)
+                {
+                    var referencedTable = foreignKeyAttribute.Name; // Should hold the table name
+                    var referencedColumn = "Id"; // Default primary key column
+                    columns.Add($"[{property.Name}] INT"); // Add the foreign key column
+                    foreignKeyConstraints.Add($"FOREIGN KEY ({property.Name}) REFERENCES {referencedTable}s({referencedColumn})");
+                    continue;
+                }
+
+                // Handle navigation properties
+                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                {
+                    var foreignKeyName = property.Name + "Id"; // Example: Property "Product" -> FK column "ProductId"
+                    columns.Add($"[{foreignKeyName}] INT"); // Add foreign key column to the table
+                    foreignKeyConstraints.Add($"FOREIGN KEY ({foreignKeyName}) REFERENCES {property.PropertyType.Name}s(Id)");
+                }
+                else if (!string.IsNullOrEmpty(columnType))
+                {
+                    columns.Add($"{columnName} {columnType} {isPrimaryKey}".Trim());
+                }
+            }
 
             if (!columns.Any())
             {
                 throw new InvalidOperationException($"No columns defined for table {tableName}.");
             }
 
+            // Create table SQL
             var createTableSql = $@"
-        IF NOT EXISTS (
-            SELECT 1
-            FROM INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_NAME = '{tableName}'
-        )
-        CREATE TABLE {tableName} ({string.Join(", ", columns)});
-    ";
-            Console.WriteLine(createTableSql);
+    IF NOT EXISTS (
+        SELECT 1
+        FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_NAME = '{tableName}'
+    )
+    CREATE TABLE {tableName} ({string.Join(", ", columns)});
+";
+
             ExecuteSql(createTableSql);
+
+            // Add foreign key constraints
+            foreach (var fkConstraint in foreignKeyConstraints)
+            {
+                var alterTableSql = $@"ALTER TABLE {tableName} ADD {fkConstraint};";
+                Console.WriteLine(alterTableSql);
+                ExecuteSql(alterTableSql);
+            }
         }
+
+
+
+
+
+
+
+
+
+
+
 
         public void ExecuteSql(string sql, params SqlParameter[] parameters)
         {
@@ -84,7 +226,11 @@ namespace Custom_ORM.Data
         {
             var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
             var isPrimaryKey = property.Name.Equals("Id", StringComparison.OrdinalIgnoreCase); // You can adjust this condition based on your actual primary key naming logic
-
+                                                                                               // Handle navigation properties (skip complex types)
+            if (underlyingType.IsClass && underlyingType != typeof(string))
+            {
+                return null; // Indicates it's not a column
+            }
             return underlyingType switch
             {
                 _ when underlyingType == typeof(int) => isPrimaryKey ? "INT IDENTITY(1,1)" : "INT",

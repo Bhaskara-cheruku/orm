@@ -1,0 +1,3 @@
+-- SQL Migration Script
+-- Migration: InitialCreate1
+-- Add your schema changes here.

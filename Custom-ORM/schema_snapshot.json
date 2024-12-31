@@ -1,0 +1,29 @@
+{
+  "Tables": {
+    "Users": {
+      "Columns": [
+        "Id INT",
+        "Name VARCHAR(MAX)",
+        "DateOfBirth DATETIME",
+        "product VARCHAR(255)"
+      ],
+      "ForeignKeys": []
+    },
+    "Products": {
+      "Columns": [
+        "Id INT",
+        "name VARCHAR(MAX)",
+        "price INT"
+      ],
+      "ForeignKeys": []
+    },
+    "Orders": {
+      "Columns": [
+        "orderId INT",
+        "ProductId INT",
+        "ProductName VARCHAR(MAX)"
+      ],
+      "ForeignKeys": []
+    }
+  }
+}
