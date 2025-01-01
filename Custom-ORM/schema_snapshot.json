@@ -4,9 +4,7 @@
       "Columns": [
         "Id INT",
         "Name VARCHAR(MAX)",
-        "phone INT",
-        "DateOfBirth DATETIME",
-        "product VARCHAR(255)"
+        "DateOfBirth DATETIME"
       ],
       "ForeignKeys": []
     },
@@ -14,13 +12,18 @@
       "Columns": [
         "Id INT",
         "name VARCHAR(MAX)",
-        "price INT"
+        "discription VARCHAR(MAX)",
+        "discount VARCHAR(MAX)",
+        "price INT",
+        "orderId INT"
       ],
-      "ForeignKeys": []
+      "ForeignKeys": [
+        "Order"
+      ]
     },
     "Orders": {
       "Columns": [
-        "orderId INT",
+        "Id INT",
         "ProductId INT",
         "ProductName VARCHAR(MAX)"
       ],

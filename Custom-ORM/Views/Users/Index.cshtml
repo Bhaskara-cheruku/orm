@@ -1,22 +1,33 @@
 ﻿@model IEnumerable<Custom_ORM.Models.User>
 
-<h1>Users</h1>
+<h1>Users List</h1>
+
 <table class="table">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Name</th>
             <th>Date of Birth</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var user in Model)
         {
-                <tr>
-                    <td>@user.Id</td>
-                    <td>@user.Name</td>
-                    <td>@user.DateOfBirth.ToShortDateString()</td>
-                </tr>
+            <tr>
+                <td>@user.Name</td>
+                <td>@user.DateOfBirth.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <!-- Edit Button -->
+                    <a href="@Url.Action("Update", "Users", new { id = user.Id })" class="btn btn-warning">Edit</a>
+                    <form method="post" action="/Users/Delete" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">Delete</button>
+                    </form>
+
+
+                </td>
+            </tr>
         }
     </tbody>
 </table>

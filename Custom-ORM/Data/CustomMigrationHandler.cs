@@ -1,189 +1,10 @@
-﻿//using System;
-//using System.ComponentModel.DataAnnotations.Schema;
-//using System.IO;
-//using System.Reflection;
-//using Microsoft.AspNetCore.Http.Features;
-
-//namespace Custom_ORM.Data
-//{
-//    public class CustomMigrationHandler
-//    {
-//        private readonly MyCustomDbContext _context;
-//        private readonly string _snapshotPath = "schema_snapshot.json";
-//        public CustomMigrationHandler(MyCustomDbContext context)
-//        {
-//            _context = context;
-//        }
-//        public void AddMigration(string migrationName)
-//        {
-//            //var migrationsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Migrations");
-//            string migrationsDir = "C:\\Users\\Bhaskara Cheruku\\source\\repos\\Custom-ORM\\Custom-ORM\\Migrations\\";
-//            if (!Directory.Exists(migrationsDir))
-//                Directory.CreateDirectory(migrationsDir);
-
-//            var migrationFile = Path.Combine(migrationsDir, $"{migrationName}_{DateTime.Now:yyyyMMddHHmmss}.sql");
-
-//            // Generate SQL script (replace this with actual schema comparison logic)
-//            Console.WriteLine("Started....");
-//            var migrationScript = GenerateMigrationScript();
-
-//            File.WriteAllText(migrationFile, migrationScript);
-//            Console.WriteLine($"Migration '{migrationName}' created at: {migrationFile}");
-//        }
-
-//        public void UpdateDatabase()
-//        {
-//            var migrationsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Migrations");
-//            if (!Directory.Exists(migrationsDir))
-//            {
-//                Console.WriteLine("No migrations directory found.");
-//                return;
-//            }
-
-//            foreach (var file in Directory.GetFiles(migrationsDir, "*.sql"))
-//            {
-//                Console.WriteLine($"Applying migration: {Path.GetFileName(file)}");
-
-//                var script = File.ReadAllText(file);
-//                _context.ExecuteSql(script); // Custom method to execute raw SQL
-//            }
-
-//            Console.WriteLine("Database updated with all migrations.");
-//        }
-//        private string GenerateMigrationScript()
-//        {
-//            Console.WriteLine("1....");
-//            var currentSnapshot = GetCurrentSchemaSnapshot();
-
-//            if (File.Exists(_snapshotPath))
-//            {
-//                Console.WriteLine("OLD");
-//                var previousSnapshot = LoadPreviousSchemaSnapshot();
-//                return CompareSchemasAndGenerateSql(previousSnapshot, currentSnapshot);
-//            }
-//            else
-//            {
-//                Console.WriteLine("New");
-//                // If no previous snapshot exists, assume this is the first migration and just create tables
-//                return CreateInitialMigrationSql(currentSnapshot);
-//            }
-//        }
-
-//        private string CompareSchemasAndGenerateSql(SchemaSnapshot previousSnapshot, SchemaSnapshot currentSnapshot)
-//        {
-//            var script = "-- SQL Migration Script\n" +
-//                         "-- Add your schema changes here.\n";
-
-//            // Compare tables in previous and current schema and generate ALTER/DROP/ADD statements
-//            foreach (var currentTable in currentSnapshot.Tables)
-//            {
-//                var tableName = currentTable.Key;
-//                var currentColumns = currentTable.Value.Columns;
-//                var previousColumns = previousSnapshot.Tables.ContainsKey(tableName)
-//                    ? previousSnapshot.Tables[tableName].Columns
-//                    : new List<string>();
-
-//                // Detect added or removed columns
-//                var addedColumns = currentColumns.Except(previousColumns).ToList();
-//                var removedColumns = previousColumns.Except(currentColumns).ToList();
-
-//                if (addedColumns.Any())
-//                    script += $"-- Add columns to table {tableName}: {string.Join(", ", addedColumns)}\n";
-//                if (removedColumns.Any())
-//                    script += $"-- Drop columns from table {tableName}: {string.Join(", ", removedColumns)}\n";
-//            }
-
-//            // Add more comparisons for other schema elements like foreign keys, indexes, etc.
-//            return script;
-//        }
-//        private string CreateInitialMigrationSql(SchemaSnapshot currentSnapshot)
-//        {
-//            var script = "-- Initial Schema Creation Script\n";
-//            foreach (var table in currentSnapshot.Tables)
-//            {
-//                var tableName = table.Key;
-//                var columns = string.Join(", ", table.Value.Columns);
-//                script += $"CREATE TABLE {tableName} ({columns});\n";
-//            }
-
-//            return script;
-//        }
-
-//        private void SaveSchemaSnapshot()
-//        {
-//            var currentSnapshot = GetCurrentSchemaSnapshot();
-//            var json = SchemaSnapshot.Serialize(currentSnapshot);
-//            File.WriteAllText(_snapshotPath, json);
-//        }
-
-//        //private SchemaSnapshot GetCurrentSchemaSnapshot()
-//        //{
-//        //    var snapshot = new SchemaSnapshot();
-
-//        //    var model = _context._dbSets;
-//        //    foreach (var entityType in model.GetEntityTypes())
-//        //    {
-//        //        var tableSchema = new SchemaSnapshot.TableSchema();
-
-//        //        foreach (var property in entityType.GetProperties())
-//        //        {
-//        //            tableSchema.Columns.Add(property.Name);
-//        //        }
-
-//        //        foreach (var foreignKey in entityType.GetForeignKeys())
-//        //        {
-//        //            tableSchema.ForeignKeys.Add(foreignKey.PrincipalEntityType.Name);
-//        //        }
-
-//        //        snapshot.Tables[entityType.GetTableName()] = tableSchema;
-//        //    }
-
-//        //    return snapshot;
-//        //}
-//        public SchemaSnapshot GetCurrentSchemaSnapshot()
-//        {
-//            var snapshot = new SchemaSnapshot();
-
-//            foreach (var dbSetEntry in _context._dbSets)
-//            {
-//                var entityType = dbSetEntry.Value.GetType().GenericTypeArguments.First(); // Get the entity type of DbSet<T>
-//                var tableSchema = new SchemaSnapshot.TableSchema();
-
-//                foreach (var property in entityType.GetProperties())
-//                {
-//                    tableSchema.Columns.Add(property.Name);
-//                }
-//                foreach (var property in entityType.GetProperties())
-//                {
-//                    var foreignKeyAttribute = property.GetCustomAttribute<ForeignKeyAttribute>();
-//                    if (foreignKeyAttribute != null)
-//                    {
-//                        tableSchema.ForeignKeys.Add(foreignKeyAttribute.Name);
-//                    }
-//                }
-
-//                snapshot.Tables[entityType.Name + "s"] = tableSchema;
-//            }
-
-//            return snapshot;
-//        }
-
-
-//        private SchemaSnapshot LoadPreviousSchemaSnapshot()
-//        {
-//            var json = File.ReadAllText(_snapshotPath);
-//            return SchemaSnapshot.Deserialize(json);
-//        }
-
-//    }
-//}
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json; // Use Newtonsoft.Json for JSON serialization/deserialization
+using Newtonsoft.Json;
 
 namespace Custom_ORM.Data
 {
@@ -228,7 +49,7 @@ namespace Custom_ORM.Data
             {
                 Console.WriteLine($"Applying migration: {Path.GetFileName(file)}");
                 var script = File.ReadAllText(file);
-                _context.ExecuteSql(script); // Custom method to execute raw SQL
+                _context.ExecuteSql(script);
             }
 
             Console.WriteLine("Database updated with all migrations.");
@@ -271,62 +92,102 @@ namespace Custom_ORM.Data
             if (clrType == typeof(TimeSpan))
                 return "TIME";
 
-            // For nullable types
             if (clrType.IsGenericType && clrType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 return MapClrTypeToSqlType(Nullable.GetUnderlyingType(clrType));
 
-            // Default case for unknown types
             return "VARCHAR(255)";
         }
+
 
         private string CompareSchemasAndGenerateSql(SchemaSnapshot previousSnapshot, SchemaSnapshot currentSnapshot)
         {
             var script = "-- SQL Migration Script\n";
-            Console.WriteLine("Entered");
+            Console.WriteLine("Entered-hellooo");
+
             foreach (var currentTable in currentSnapshot.Tables)
             {
-                Console.WriteLine(currentTable.Key );
+                Console.WriteLine(currentTable.Key);
                 var tableName = currentTable.Key;
                 var currentColumns = currentTable.Value.Columns;
                 var previousColumns = previousSnapshot.Tables.ContainsKey(tableName)
                     ? previousSnapshot.Tables[tableName].Columns
                     : new List<string>();
-                
+
+                // Added and removed columns
                 var addedColumns = currentColumns.Except(previousColumns).ToList();
                 var removedColumns = previousColumns.Except(currentColumns).ToList();
 
+                // Detect changed columns
+                Console.WriteLine("Columns....");
+                var changedColumns = currentColumns
+                    .Where(c => previousColumns.Any(p => p.StartsWith(c.Split(' ')[0]) && p.Split(' ')[1] != c.Split(' ')[1]))
+                    .ToList();
+                if (changedColumns == null)
+                {
+                    Console.WriteLine("Null");
+                }
+                List<string> changedcolumnnames = new List<string>();
+                foreach (var column in changedColumns)
+                {
+                    string[] parts = column.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    changedcolumnnames.Add(parts[0]);
+                    Console.WriteLine("changed column -"+column);
+                    //string[] parts = column.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    script += $"ALTER TABLE {tableName} ALTER COLUMN {parts[0]} {parts[1]};\n";
+                }
+
+                // Handle added columns
                 foreach (var column in addedColumns)
                 {
-
+                    Console.WriteLine("Added Column ---" + column);
                     // Example column string: "ColumnName DataType"
                     string[] parts = column.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    
 
                     if (parts.Length < 2)
                     {
-                        // Handle invalid column definitions
                         throw new ArgumentException($"Invalid column definition: {column}");
                     }
+                    string columnName = parts[0];
+                    string dataType = parts[1]; 
 
-                    string columnName = parts[0]; // The first part is the column name
-                    string dataType = parts[1];  // The second part is the data type
-
-                    // If there's additional metadata (like NOT NULL), include it
                     string additionalAttributes = string.Join(" ", parts.Skip(2));
+
                     Console.WriteLine(columnName);
-                    string[] validTypes = { "INT", "VARCHAR(MAX)", "DATETIME", "VARCHAR(255)" }; // Add all valid types
+
+                    string[] validTypes = { "INT", "VARCHAR(MAX)", "DATETIME", "VARCHAR(255)", "DECIMAL(18, 2)"}; // Add all valid types
                     if (!validTypes.Contains(dataType.ToUpper()))
                     {
                         throw new ArgumentException($"Unsupported column type: {dataType}");
                     }
-                    // Construct the ALTER TABLE statement
-                    script += $"ALTER TABLE {tableName} ADD {columnName} {dataType} {additionalAttributes};\n";
+
+                    foreach (var changedcolumn in changedcolumnnames)
+                    {
+                        if (changedcolumn != columnName)
+                        {
+                            script += $"ALTER TABLE {tableName} ADD {columnName} {dataType} {additionalAttributes};\n";
+
+                        }
+
+                    }
+                    if (changedcolumnnames.Count == 0)
+                    {
+                        script += $"ALTER TABLE {tableName} ADD {columnName} {dataType} {additionalAttributes};\n";
+
+                    }
+
+
+
                 }
 
+                // Handle removed columns
                 foreach (var column in removedColumns)
                 {
-
+                    Console.WriteLine("removed column -" + column);
                     // Example column string: "ColumnName DataType"
+                    
                     string[] parts = column.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    
 
                     if (parts.Length < 2)
                     {
@@ -335,10 +196,21 @@ namespace Custom_ORM.Data
                     }
 
                     string columnName = parts[0]; // The first part is the column name
-                    string dataType = parts[1];  // The second part is the data type
 
+                    foreach (var changedcolumn in changedcolumnnames)
+                    {
+                        if (changedcolumn != columnName) {
+                            script += $"ALTER TABLE {tableName} DROP COLUMN {columnName};\n";
 
-                    script += $"ALTER TABLE {tableName} DROP COLUMN {columnName};\n";
+                        }
+
+                    }
+                    if (changedcolumnnames.Count == 0)
+                    {
+                        script += $"ALTER TABLE {tableName} DROP COLUMN {columnName};\n";
+
+                    }
+                    // If the column is being removed, generate the DROP COLUMN SQL statement
                 }
             }
 
@@ -346,6 +218,17 @@ namespace Custom_ORM.Data
 
             return script;
         }
+
+
+
+
+
+
+
+
+
+
+
 
         private string CreateInitialMigrationSql(SchemaSnapshot currentSnapshot)
         {
@@ -429,26 +312,26 @@ namespace Custom_ORM.Data
             return snapshot;
         }
 
-        private Dictionary<string, object> GetDbSets()
-        {
-            var dbSets = new Dictionary<string, object>();
+        //private Dictionary<string, object> GetDbSets()
+        //{
+        //    var dbSets = new Dictionary<string, object>();
 
-            var dbSetProperties = this.GetType()
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.PropertyType.IsGenericType &&
-                            p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>));
+        //    var dbSetProperties = this.GetType()
+        //        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+        //        .Where(p => p.PropertyType.IsGenericType &&
+        //                    p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>));
 
-            foreach (var property in dbSetProperties)
-            {
-                var propertyValue = property.GetValue(this);
-                if (propertyValue != null)
-                {
-                    dbSets.Add(property.Name, propertyValue);
-                }
-            }
+        //    foreach (var property in dbSetProperties)
+        //    {
+        //        var propertyValue = property.GetValue(this);
+        //        if (propertyValue != null)
+        //        {
+        //            dbSets.Add(property.Name, propertyValue);
+        //        }
+        //    }
 
-            return dbSets;
-        }
+        //    return dbSets;
+        //}
 
 
 

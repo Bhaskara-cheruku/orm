@@ -15,8 +15,8 @@ namespace Custom_ORM.Controllers
         }
         public IActionResult Index()
         {
-            var sql = "SELECT * FROM Products";
-            var Products = _context.Query<Product>(sql).ToList();
+            //var sql = "SELECT * FROM Products";
+            var Products = _context.Products.GetAll();
 
             return View(Products);
         }
